@@ -1,0 +1,31 @@
+{
+  "name": "TheSuby",
+  "version": "0.1.0",
+  "description": "A music player for subsonic",
+  "main": "main.js",
+  "scripts": {
+    "start": "node-sass -w css/player.scss dist/css/styles.css > /dev/null | electron .",
+    "build": "node-sass --output-style=compressed css/player.scss dist/css/styles.css && electron ."
+  },
+  "repository": "https://github.com/fbentele/suby",
+  "keywords": [
+    "Electron",
+    "suby",
+    "subsonic"
+  ],
+  "author": "fbentele",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^7.1.1",
+    "electron-packager": "^14.1.0",
+    "fs": "0.0.1-security",
+    "jquery": "^3.4.1",
+    "jsmediatags": "^3.9.3",
+    "musicmetadata": "^2.0.5",
+    "node-sass": "^4.13.0",
+    "q": "^1.5.1"
+  },
+  "dependencies": {
+    "crypto-js": "^3.1.9-1"
+  }
+}

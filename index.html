@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="Content-Security-Policy" content="default-src *; style-src 'self' http://* 'unsafe-inline'; script-src 'self' http://* 'unsafe-inline' 'unsafe-eval'"/>
+    <link rel="stylesheet" type="text/css" href="./dist/css/styles.css">
+    <title>The Suby</title>
+</head>
+<body>
+<div class="mod-player">
+    <div class="artist-container">
+        <div class="header">
+            <h2>Musik</h2><button class="js-show-settings">Settings</button>
+        </div>
+        <div class="settings-container">
+            <label for="settings-server">Server:</label>
+            <input id="settings-server" type="text" placeholder="https://subsonicserver.org" name="server"><br>
+            <label for="settings-username">Username</label>
+            <input id="settings-username" type="text" placeholder="username">
+            <label for="settings-password">Password</label>
+            <input id="settings-password" type="password" placeholder="password">
+            <input id="settings-save" type="submit" value="Speichern">
+        </div>
+        <div id="music-library">
+            <ul class="artist-list"></ul>
+            <ul class="album-list"></ul>
+            <ul class="track-list"></ul>
+            <ul class="play-list"></ul>
+        </div>
+    </div>
+    <div id="player">
+        <audio id="the-player" controls>
+        </audio>
+        <div id="now-playing">
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="./renderer.js"></script>
+<script>window.$ = window.jQuery = require('./node_modules/jquery/dist/jquery.min.js');</script>
+<script type="text/javascript" src="./app.js"></script>
+
+</body>
+</html>
