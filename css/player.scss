@@ -1,51 +1,44 @@
+
 body {
     font-family: Monaco, sans-serif;
     font-size: 14px;
     padding-bottom: 80px;
 }
 
-.mod-player {
-    .header {
-        display: flex;
-        justify-content: space-between;
-    }
-    .settings-container {
-        display: none;
-    }
-    .artist-container {
-        #music-library {
-            display: flex;
-            height: calc(100vh - 74px - 62px);
-            .artist-list, .album-list, .track-list, .play-list {
-                width: 25%;
-                list-style:none;
-                padding: 0;
-                overflow-y: auto;
-                li {
-                    cursor: pointer;
-                }
-            }
-            .play-list {
-                .currently-playing {
-                    font-weight: bold;
-                }
-            }
-        }
+.header {
+    display: flex;
+    justify-content: space-between;
+}
 
-    }
+.page-settings, .page-home {
+    display: none;
+}
 
-    #player {
-        #the-player {
-            padding-right: 20px;
-        }
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px;
-        background: wheat;
+.page-settings {
+    padding: 1em;
+}
+
+#player {
+    #the-player {
+        padding-right: 20px;
     }
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    background: wheat;
+}
+
+.currently-playing {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.table-striped tr.active {
+    color: #fff;
+    background-color: #116cd6;
 }

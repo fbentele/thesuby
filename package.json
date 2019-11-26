@@ -23,6 +23,7 @@
     "jsmediatags": "^3.9.3",
     "musicmetadata": "^2.0.5",
     "node-sass": "^4.13.0",
+    "photonkit": "^0.1.2",
     "q": "^1.5.1"
   },
   "dependencies": {

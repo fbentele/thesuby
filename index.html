@@ -4,16 +4,38 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
     <meta http-equiv="Content-Security-Policy" content="default-src *; style-src 'self' http://* 'unsafe-inline'; script-src 'self' http://* 'unsafe-inline' 'unsafe-eval'"/>
+    <link rel="stylesheet" type="text/css" href="./node_modules/photonkit/dist/css/photon.css">
     <link rel="stylesheet" type="text/css" href="./dist/css/styles.css">
     <title>The Suby</title>
 </head>
 <body>
-<div class="mod-player">
-    <div class="artist-container">
-        <div class="header">
-            <h2>Musik</h2><button class="js-show-settings">Settings</button>
+<div class="window">
+    <div class="toolbar-actions">
+        <div class="btn-group">
+            <button class="btn btn-default js-page" data-page="page-home">
+                <span class="icon icon-home"></span>
+            </button>
+            <button class="btn btn-default active js-page" data-page="page-music">
+                <span class="icon icon-folder"></span>
+            </button>
+            <button class="btn btn-default js-page" data-page="page-settings">
+                <span class="icon icon-cog"></span>
+            </button>
         </div>
-        <div class="settings-container">
+        <button class="btn btn-default">
+            <span class="icon icon-home icon-text"></span>
+            Filters
+        </button>
+
+        <button class="btn btn-default btn-dropdown pull-right">
+            <span class="icon icon-megaphone"></span>
+        </button>
+    </div>
+    <div class="window-content">
+        <div class="page-item page-home">
+            <h1>Sali</h1>
+        </div>
+        <div class="page-item page-settings">
             <label for="settings-server">Server:</label>
             <input id="settings-server" type="text" placeholder="https://subsonicserver.org" name="server"><br>
             <label for="settings-username">Username</label>
@@ -22,12 +44,32 @@
             <input id="settings-password" type="password" placeholder="password">
             <input id="settings-save" type="submit" value="Speichern">
         </div>
-        <div id="music-library">
-            <ul class="artist-list"></ul>
-            <ul class="album-list"></ul>
-            <ul class="track-list"></ul>
-            <ul class="play-list"></ul>
+        <div class="pane-group page-item page-music">
+            <div class="pane">
+                <div class="pane-group">
+                    <div class="pane">
+                        <table class="artist-list table-striped"></table>
+                    </div>
+                    <div class="pane">
+                        <table class="album-list table-striped"></table>
+                    </div>
+                    <div class="pane">
+                        <table class="track-list table-striped"></table>
+                    </div>
+                </div>
+            </div>
+            <div class="pane-sm sidebar">
+                <table class="play-list table-striped"></table>
+            </div>
         </div>
+    </div>
+    <footer class="toolbar toolbar-footer">
+        <h1 class="title">Footer</h1>
+    </footer>
+</div>
+
+<div class="mod-player">
+    <div class="artist-container">
     </div>
     <div id="player">
         <audio id="the-player" controls>
