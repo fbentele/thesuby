@@ -10,21 +10,22 @@ let apiBaseU = '';
 let apiAccessToken = '';
 let currentFolder = subyFolder;
 
-
-/**
- * the player
- */
 $(document).ready(function ($) {
+    let albumList = $('.album-list');
+    let trackList = $('.track-list');
+    let playList = $('.play-list');
+    let player = $('#the-player');
+    let nowPlaying = $('#now-playing');
+    let notification = $('#notification-center');
 
     loadSettings();
     updateDirListing();
 
     $(document).on('click', '.folder-name', function () {
-
         if ($(this).data('artist')) {
             updateDirListing($(this).data('artist'), false);
-            $('.album-list').html('<thead><tr><th>Album</th></tr></thead>');
-            $('.track-list').html('<thead><tr><th>Tracks</th></tr></thead>');
+            albumList.html('<thead><tr><th>Album</th></tr></thead>');
+            trackList.html('<thead><tr><th>Tracks</th></tr></thead>');
         } else if ($(this).data('album')) {
             updateDirListing(false, $(this).data('album'));
         } else {
@@ -35,38 +36,24 @@ $(document).ready(function ($) {
         $(this).addClass('active');
     });
 
-    $(document).on('click', '.file-name, .file-stream', function () {
-        let self = $(this);
-        self.parent().find('.active').removeClass('active');
-        self.addClass('active');
-    });
-
-    $(document).on('dblclick', '.file-name', function () {
-        playFile(currentFolder + $(this).text());
-        $('.play-list').html('<thead><tr><th>Playlist</th></tr></thead>');
-        $('.play-list').append('<tr class="play-list-item currently-playing"><td>' + file.name + '</td></tr>');
+    $(document).on('dblclick', '.album-list .folder-name', function () {
+        let self = $('.file-stream').first();
+        playStream(self);
+        populatePlaylist(self);
     });
 
     $(document).on('dblclick', '.file-stream', function () {
         let self = $(this);
         playStream(self);
-        let playlist = self.nextAll();
-        $('.play-list').html('<thead><tr><th>Playlist</th></tr></thead>');
-        $('.play-list').append('<tr class="play-list-item currently-playing"><td>' + self.text() + '</td></tr>');
-        $.each(playlist, function () {
-            $('.play-list').append('<tr class="play-list-item" data-song="' + $(this).data('song') + '" data-path="' + $(this).data('path') + '"><td>' + $(this).text() + '</td></tr>');
-        });
+        populatePlaylist(self);
     });
 
-    $('#the-player').on('ended', function () {
-        let self = $('.play-list .currently-playing');
-        self.removeClass('currently-playing');
-        let nextsong = self.next();
-        nextsong.addClass('currently-playing');
-        if (nextsong) {
-            playStream(nextsong);
-        }
+    $(document).on('dblclick', '.play-list-item', function () {
+        let self = $(this);
+        playStream(self);
+        updatePlaylistCurrentlyPlaying(self);
     });
+
     $(document).on('click', '.js-page', function () {
         let self = $(this);
         $('.js-page.active').removeClass('active');
@@ -92,6 +79,11 @@ $(document).ready(function ($) {
         return false;
     });
 
+    $(document).on('click', '.js-play-next', playNextSong);
+
+    $(document).on('click', '.js-play-previous', playPreviousSong);
+
+    player.on('ended', playNextSong);
 
     /**
      * Online Offline eventlistener
@@ -100,19 +92,54 @@ $(document).ready(function ($) {
     /*window.addEventListener('online', updateDirListing());
     window.addEventListener('offline', updateDirListing());*/
 
+    function playNextSong() {
+        let self = $('.play-list .currently-playing');
+        let nextSong = self.next();
+        if (nextSong.length) {
+            updatePlaylistCurrentlyPlaying(nextSong);
+            playStream(nextSong);
+        }
+    }
 
-    function playFile(file) {
-        $('#now-playing').text('');
-        $('#the-player').attr('src', file);
-        $('#the-player')[0].play();
+    function playPreviousSong() {
+        let self = $('.play-list .currently-playing');
+        let prevSong = self.prev();
+        if (prevSong.length) {
+            updatePlaylistCurrentlyPlaying(prevSong);
+            playStream(prevSong);
+        }
+    }
+
+    function updatePlaylistCurrentlyPlaying(self) {
+        $('.play-list .currently-playing').removeClass('currently-playing');
+        self.addClass('currently-playing');
+    }
+
+    function populatePlaylist(self) {
+        let playlist = self.nextAll();
+        playList.html('<thead><tr><th>Playlist</th></tr></thead>');
+        playList.append('<tr class="play-list-item currently-playing" data-song="' + $(this).data('song') + '" data-path="' + $(this).data('path') + '"><td>' + self.text() + '</td></tr>');
+        $.each(playlist, function () {
+            playList.append('<tr class="play-list-item" data-song="' + $(this).data('song') + '" data-path="' + $(this).data('path') + '"><td>' + $(this).text() + '</td></tr>');
+        });
+        $('#custom-controls').show();
+    }
+
+    function updateTrackInfo(file) {
         jsmediatags.read(file, {
             onSuccess: function (tag) {
-                $('#now-playing').append(tag.tags.artist + ' - ' + tag.tags.album + ' - ' + tag.tags.title);
+                nowPlaying.text(tag.tags.artist + ' - ' + tag.tags.album + ' - ' + tag.tags.title);
             },
             onError: function (error) {
                 console.log(':(', error.type, error.info);
             }
         });
+    }
+
+    function playFile(file) {
+        player.attr('src', file);
+        player[0].play();
+        updateTrackInfo(file);
     }
 
     function playStream(item) {
@@ -130,9 +157,9 @@ $(document).ready(function ($) {
                 if (err) throw err;
             });
 
-            $('#now-playing').text('streaming');
-            $('#the-player').attr('src', url);
-            $('#the-player')[0].play();
+            nowPlaying.text('Streaming...');
+            player.attr('src', url);
+            player[0].play();
             download(url, pathReplace(filepath));
         }
     }
@@ -193,9 +220,9 @@ $(document).ready(function ($) {
         let api = apiBaseU + 'getArtist' + apiAccessToken + '&id=' + artistid;
         $.get(api, function (data) {
             let albums = data["subsonic-response"]["artist"]["album"];
-            $('.album-list').html('<thead><tr><th>Album</th></tr></thead>');
+            albumList.html('<thead><tr><th>Album</th></tr></thead>');
             albums.forEach(album => {
-                $('.album-list').append('<tr class="folder-name" data-album="' + album.id + '"><td>' + album.name + '</td></tr>');
+                albumList.append('<tr class="folder-name" data-album="' + album.id + '"><td>' + album.name + '</td></tr>');
             });
         });
     }
@@ -204,9 +231,9 @@ $(document).ready(function ($) {
         let api = apiBaseU + 'getAlbum' + apiAccessToken + '&id=' + albumid;
         $.get(api, function (data) {
             let tracks = data["subsonic-response"]["album"]["song"];
-            $('.track-list').html('<thead><tr><th>Tracks</th></tr></thead>');
+            trackList.html('<thead><tr><th>Tracks</th></tr></thead>');
             tracks.forEach(song => {
-                $('.track-list').append('<tr class="file-stream" data-song="' + song.id + '" data-path="' + song.path + '"><td>' + song.title + '</td></tr>');
+                trackList.append('<tr class="file-stream" data-song="' + song.id + '" data-path="' + song.path + '"><td>' + song.title + '</td></tr>');
             });
         });
     }
@@ -227,6 +254,7 @@ $(document).ready(function ($) {
             deferred.reject(err);
         }).on('finish', function () {
             deferred.resolve(filepath);
+            updateTrackInfo(filepath);
         });
 
         return deferred.promise;
@@ -245,7 +273,10 @@ $(document).ready(function ($) {
     }
 
     function popUpNotification(level, message) {
-        console.log(level + ': ' + message);
+        notification.append('<div class="' + level + '">' + message + '</div>');
+        setTimeout(function () {
+            notification.text('');
+        }, 2500);
     }
 
     function loadSettings() {
@@ -262,4 +293,4 @@ $(document).ready(function ($) {
         let token = md5(settings.password + 'therandomsalt');
         apiAccessToken = '?u=' + settings.username + '&t=' + token + '&s=therandomsalt&v=1.16.1&c=thesuby&f=json';
     }
-});
+})

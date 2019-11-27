@@ -2,15 +2,13 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
-    <meta http-equiv="Content-Security-Policy" content="default-src *; style-src 'self' http://* 'unsafe-inline'; script-src 'self' http://* 'unsafe-inline' 'unsafe-eval'"/>
     <link rel="stylesheet" type="text/css" href="./node_modules/photonkit/dist/css/photon.css">
     <link rel="stylesheet" type="text/css" href="./dist/css/styles.css">
     <title>The Suby</title>
 </head>
 <body>
 <div class="window">
-    <div class="toolbar-actions">
+    <div class="header-bar">
         <div class="btn-group">
             <button class="btn btn-default js-page" data-page="page-home">
                 <span class="icon icon-home"></span>
@@ -33,16 +31,25 @@
     </div>
     <div class="window-content">
         <div class="page-item page-home">
-            <h1>Sali</h1>
+            <h1>This is the new Suby!</h1>
+            <p>A music player for ultras.</p>
         </div>
         <div class="page-item page-settings">
-            <label for="settings-server">Server:</label>
-            <input id="settings-server" type="text" placeholder="https://subsonicserver.org" name="server"><br>
-            <label for="settings-username">Username</label>
-            <input id="settings-username" type="text" placeholder="username">
-            <label for="settings-password">Password</label>
-            <input id="settings-password" type="password" placeholder="password">
-            <input id="settings-save" type="submit" value="Speichern">
+            <div class="form-group">
+                <label class="settings-label" for="settings-server">Server:</label>
+                <input id="settings-server" class="settings-input" type="text" placeholder="https://subsonicserver.org" name="server"><br>
+            </div>
+            <div class="form-group">
+                <label class="settings-label" for="settings-username">Username:</label>
+                <input id="settings-username" class="settings-input" type="text" placeholder="username">
+            </div>
+            <div class="form-group">
+                <label class="settings-label" for="settings-password">Password:</label>
+                <input id="settings-password" class="settings-input" type="password" placeholder="password">
+            </div>
+            <div class="form-group">
+                <input id="settings-save" class="btn btn-primary" type="submit" value="Speichern">
+            </div>
         </div>
         <div class="pane-group page-item page-music">
             <div class="pane">
@@ -63,23 +70,30 @@
             </div>
         </div>
     </div>
-    <footer class="toolbar toolbar-footer">
-        <h1 class="title">Footer</h1>
+    <footer>
+        <div id="player">
+            <div id="player-wrapper">
+                <audio id="the-player" controls></audio>
+                <div id="custom-controls">
+                    <button class="icon icon-fast-backward js-play-previous"></button>
+                    <button class="icon icon-fast-forward js-play-next"></button>
+                </div>
+            </div>
+            <div id="now-playing">
+            </div>
+        </div>
     </footer>
+    <div id="notification-center">
+
+    </div>
 </div>
 
 <div class="mod-player">
     <div class="artist-container">
     </div>
-    <div id="player">
-        <audio id="the-player" controls>
-        </audio>
-        <div id="now-playing">
-        </div>
-    </div>
+
 </div>
 
-<script type="text/javascript" src="./renderer.js"></script>
 <script>window.$ = window.jQuery = require('./node_modules/jquery/dist/jquery.min.js');</script>
 <script type="text/javascript" src="./app.js"></script>
 

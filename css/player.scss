@@ -1,44 +1,80 @@
-
 body {
     font-family: Monaco, sans-serif;
     font-size: 14px;
     padding-bottom: 80px;
 }
 
-.header {
-    display: flex;
-    justify-content: space-between;
+$primary: #6a9094;
+
+.header-bar {
+    padding: 5px;
+    background: $primary;
 }
 
 .page-settings, .page-home {
     display: none;
+    padding: 10px;
 }
 
 .page-settings {
     padding: 1em;
+    .settings-label {
+        width: 100px;
+    }
+    .settings-input {
+        width: 250px;
+    }
+    .form-group {
+        display: flex;
+        align-items: center;
+    }
 }
 
 #player {
-    #the-player {
-        padding-right: 20px;
+    #player-wrapper {
+        display: flex;
+        align-items: center;
+
+        #the-player {
+            padding-right: 20px;
+        }
+        #custom-controls {
+            display: none;
+        }
     }
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 10px;
-    background: wheat;
+    background: $primary;
 }
 
-.currently-playing {
-    font-weight: bold;
-    text-decoration: underline;
+.table-striped {
+    .currently-playing {
+        font-weight: bold;
+        text-decoration: underline;
+        background-color: #116cd6 !important;
+        color: #fff;
+    }
+
+    tr.active {
+        color: #fff;
+        background-color: #116cd6;
+    }
 }
 
-.table-striped tr.active {
-    color: #fff;
-    background-color: #116cd6;
+.sidebar {
+    overflow-x: auto;
+}
+
+#notification-center {
+    position: fixed;
+    top: 20px;
+    right: 50px;
+    .success {
+        padding: 20px;
+        background-color: rgba(20, 92, 0, 1);
+        color: #fff;
+    }
 }

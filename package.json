@@ -5,7 +5,8 @@
   "main": "main.js",
   "scripts": {
     "start": "node-sass -w css/player.scss dist/css/styles.css > /dev/null | electron .",
-    "build": "node-sass --output-style=compressed css/player.scss dist/css/styles.css && electron ."
+    "build": "node-sass --output-style=compressed css/player.scss dist/css/styles.css && electron .",
+    "dist-mac": "electron-packager . --overwrite --icon=/Users/flo/PhpstormProjects/thesuby/assets/icons/Suby.icns"
   },
   "repository": "https://github.com/fbentele/suby",
   "keywords": [
@@ -17,7 +18,7 @@
   "license": "MIT",
   "devDependencies": {
     "electron": "^7.1.1",
-    "electron-packager": "^14.1.0",
+    "electron-packager": "^14.1.1",
     "fs": "0.0.1-security",
     "jquery": "^3.4.1",
     "jsmediatags": "^3.9.3",
@@ -27,6 +28,10 @@
     "q": "^1.5.1"
   },
   "dependencies": {
-    "crypto-js": "^3.1.9-1"
+    "crypto-js": "^3.1.9-1",
+    "jquery": "^3.4.1",
+    "jsmediatags": "^3.9.3",
+    "photonkit": "^0.1.2",
+    "q": "^1.5.1"
   }
 }
