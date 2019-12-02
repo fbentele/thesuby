@@ -12,31 +12,40 @@ let currentFolder = subyFolder;
 
 $(document).ready(function ($) {
     let albumList = $('.album-list');
-    let trackList = $('.track-list');
+    let songList = $('.song-list');
     let playList = $('.play-list');
     let player = $('#the-player');
     let nowPlaying = $('#now-playing');
     let notification = $('#notification-center');
 
     loadSettings();
-    updateDirListing();
+    getArtists();
 
-    $(document).on('click', '.folder-name', function () {
+    $(document).on('click', '.artist-name', function () {
         if ($(this).data('artist')) {
-            updateDirListing($(this).data('artist'), false);
+            getAlbums($(this).data('artist'));
             albumList.html('<thead><tr><th>Album</th></tr></thead>');
-            trackList.html('<thead><tr><th>Tracks</th></tr></thead>');
-        } else if ($(this).data('album')) {
-            updateDirListing(false, $(this).data('album'));
-        } else {
-            currentFolder += $(this).text() + '/';
-            updateDirListing();
+            songList.html('<thead><tr><th>Songs</th></tr></thead>');
         }
+        $(this).siblings().removeClass('active');
+        $(this).addClass('active');
+        saveActiveState('artist', $(this).data('artist'));
+    });
+
+    $(document).on('click', '.album-name', function () {
+        getSongs($(this).data('album'));
+
+        $(this).siblings().removeClass('active');
+        $(this).addClass('active');
+        saveActiveState('album', $(this).data('album'));
+    });
+
+    $(document).on('click', '.file-stream', function () {
         $(this).siblings().removeClass('active');
         $(this).addClass('active');
     });
 
-    $(document).on('dblclick', '.album-list .folder-name', function () {
+    $(document).on('dblclick', '.album-list .album-name', function () {
         let self = $('.file-stream').first();
         playStream(self);
         populatePlaylist(self);
@@ -46,6 +55,7 @@ $(document).ready(function ($) {
         let self = $(this);
         playStream(self);
         populatePlaylist(self);
+        saveActiveState('song', $(this).data('song'));
     });
 
     $(document).on('dblclick', '.play-list-item', function () {
@@ -111,21 +121,23 @@ $(document).ready(function ($) {
     }
 
     function updatePlaylistCurrentlyPlaying(self) {
+        $('.play-list .currently-playing').removeClass('active');
         $('.play-list .currently-playing').removeClass('currently-playing');
         self.addClass('currently-playing');
+        self.addClass('active');
     }
 
     function populatePlaylist(self) {
         let playlist = self.nextAll();
         playList.html('<thead><tr><th>Playlist</th></tr></thead>');
-        playList.append('<tr class="play-list-item currently-playing" data-song="' + $(this).data('song') + '" data-path="' + $(this).data('path') + '"><td>' + self.text() + '</td></tr>');
+        playList.append('<tr class="play-list-item currently-playing active" data-song="' + self.data('song') + '" data-path="' + self.data('path') + '"><td>' + self.text() + '</td></tr>');
         $.each(playlist, function () {
             playList.append('<tr class="play-list-item" data-song="' + $(this).data('song') + '" data-path="' + $(this).data('path') + '"><td>' + $(this).text() + '</td></tr>');
         });
         $('#custom-controls').show();
     }
 
-    function updateTrackInfo(file) {
+    function updateSongInfo(file) {
         jsmediatags.read(file, {
             onSuccess: function (tag) {
                 nowPlaying.text(tag.tags.artist + ' - ' + tag.tags.album + ' - ' + tag.tags.title);
@@ -139,7 +151,7 @@ $(document).ready(function ($) {
     function playFile(file) {
         player.attr('src', file);
         player[0].play();
-        updateTrackInfo(file);
+        updateSongInfo(file);
     }
 
     function playStream(item) {
@@ -165,32 +177,22 @@ $(document).ready(function ($) {
     }
 
     function updateDirListing(artistid, albumid) {
-        if (navigator.onLine) {
-            if (artistid) {
-                getAlbums(artistid);
-            } else if (albumid) {
-                getTracks(albumid);
+        fs.readdir(currentFolder, {withFileTypes: true}, (err, files) => {
+            if (err) {
+                console.log(err)
             } else {
-                getArtists();
-            }
-        } else {
-            fs.readdir(currentFolder, {withFileTypes: true}, (err, files) => {
-                if (err) {
-                    console.log(err)
-                } else {
-                    $('.artist-list').append('<thead><tr><th>Artists</th></tr></thead>');
-                    files.forEach(file => {
-                        if (file.isDirectory()) {
-                            $('.artist-list').append('<tr class="folder-name"><td>' + file.name + '</td></tr>');
-                        } else {
-                            if (file.name.endsWith('.mp3') || file.name.endsWith('.m4a')) {
-                                $('.artist-list').append('<tr class="file-name"><td>' + file.name + '</td></tr>');
-                            }
+                $('.artist-list').append('<thead><tr><th>Artists</th></tr></thead>');
+                files.forEach(file => {
+                    if (file.isDirectory()) {
+                        $('.artist-list').append('<tr class="artist-name"><td>' + file.name + '</td></tr>');
+                    } else {
+                        if (file.name.endsWith('.mp3') || file.name.endsWith('.m4a')) {
+                            $('.artist-list').append('<tr class="file-name"><td>' + file.name + '</td></tr>');
                         }
-                    });
-                }
-            });
-        }
+                    }
+                });
+            }
+        });
     }
 
     /**
@@ -210,7 +212,7 @@ $(document).ready(function ($) {
             $('.artist-list').append('<thead><tr><th>Artists</th></tr></thead>');
             artists.forEach(file => {
                 file.artist.forEach(artist => {
-                    $('.artist-list').append('<tr class="folder-name" data-artist="' + artist.id + '"><td>' + artist.name + '</td></tr>');
+                    $('.artist-list').append('<tr class="artist-name" data-artist="' + artist.id + '"><td>' + artist.name + '</td></tr>');
                 });
             });
         });
@@ -222,20 +224,22 @@ $(document).ready(function ($) {
             let albums = data["subsonic-response"]["artist"]["album"];
             albumList.html('<thead><tr><th>Album</th></tr></thead>');
             albums.forEach(album => {
-                albumList.append('<tr class="folder-name" data-album="' + album.id + '"><td>' + album.name + '</td></tr>');
+                albumList.append('<tr class="album-name" data-album="' + album.id + '"><td>' + album.name + '</td></tr>');
             });
+
         });
     }
 
-    function getTracks(albumid) {
+    function getSongs(albumid) {
         let api = apiBaseU + 'getAlbum' + apiAccessToken + '&id=' + albumid;
         $.get(api, function (data) {
-            let tracks = data["subsonic-response"]["album"]["song"];
-            trackList.html('<thead><tr><th>Tracks</th></tr></thead>');
-            tracks.forEach(song => {
-                trackList.append('<tr class="file-stream" data-song="' + song.id + '" data-path="' + song.path + '"><td>' + song.title + '</td></tr>');
+            let songs = data["subsonic-response"]["album"]["song"];
+            songList.html('<thead><tr><th>Songs</th></tr></thead>');
+            songs.forEach(song => {
+                songList.append('<tr class="file-stream" data-song="' + song.id + '" data-path="' + song.path + '"><td>' + song.title + '</td></tr>');
             });
         });
+        songList.attr('data-album', albumid);
     }
 
     function download(url, filepath) {
@@ -254,7 +258,7 @@ $(document).ready(function ($) {
             deferred.reject(err);
         }).on('finish', function () {
             deferred.resolve(filepath);
-            updateTrackInfo(filepath);
+            updateSongInfo(filepath);
         });
 
         return deferred.promise;
@@ -293,4 +297,37 @@ $(document).ready(function ($) {
         let token = md5(settings.password + 'therandomsalt');
         apiAccessToken = '?u=' + settings.username + '&t=' + token + '&s=therandomsalt&v=1.16.1&c=thesuby&f=json';
     }
-})
+
+    function saveActiveState(key, value) {
+        let activeStates = localStorage.getItem('suby-active-states');
+        if (activeStates) {
+            activeStates = JSON.parse(activeStates);
+        } else {
+            activeStates = {};
+        }
+        activeStates[key] = value;
+        localStorage.setItem('suby-active-states', JSON.stringify(activeStates));
+    }
+
+    function loadActiveStates(key) {
+        let activeStates = localStorage.getItem('suby-active-states');
+        if (activeStates) {
+            activeStates = JSON.parse(activeStates);
+        } else {
+            activeStates = {};
+        }
+
+        // set active state for artist
+        switch (key) {
+            case 'artist':
+                $('.artist-name[data-artist="' + activeStates.artist + '"]').trigger('click');
+                break;
+            case 'album':
+                $('.album-name[data-album="' + activeStates.album + '"]').trigger('click');
+                break;
+            case 'song':
+                $('.file-stream[data-song="' + activeStates.song + '"]').trigger('click');
+                break;
+        }
+    }
+});
