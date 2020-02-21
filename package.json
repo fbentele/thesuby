@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node-sass -w css/player.scss dist/css/styles.css > /dev/null | electron .",
     "build": "node-sass --output-style=compressed css/player.scss dist/css/styles.css && electron .",
-    "dist-mac": "electron-packager . --overwrite --icon=/Users/flo/PhpstormProjects/thesuby/assets/icons/Suby.icns"
+    "dist-mac": "electron-packager . --overwrite --icon=assets/icons/Suby.icns"
   },
   "repository": "https://github.com/fbentele/suby",
   "keywords": [
