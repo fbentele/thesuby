@@ -51,6 +51,7 @@ $primary: #6a9094;
 }
 
 .table-striped {
+
     .currently-playing {
         font-weight: bold;
         text-decoration: underline;
@@ -58,9 +59,18 @@ $primary: #6a9094;
         color: #fff;
     }
 
-    tr.active {
+    .active {
         color: #fff;
         background-color: #116cd6;
+    }
+}
+
+.list {
+    height: 100%;
+    .list-select {
+        height: calc(100% - 31px);
+        width: 100%;
+        border: 0;
     }
 }
 

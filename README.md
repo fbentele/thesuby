@@ -19,5 +19,10 @@ npm install
 npm start
 ```
 
+## To build the macOS app
+Run this in the project-root folder:
+```
+npm run dist-mac
+```
 ## License
 &copy; 2019 Florian Bentele | [MIT License](LICENSE.md)
