@@ -1,6 +1,7 @@
 const {ipcRenderer, remote} = require('electron');
 const fs = require('fs');
 const http = require('http');
+const https = require('https');
 const md5 = require("crypto-js/md5");
 const Q = require('q');
 const jsmediatags = require('jsmediatags');
@@ -157,8 +158,14 @@ $(document).ready(function ($) {
         let lastIndex = filepath.lastIndexOf('/');
         let path = filepath.substr(0, lastIndex);
 
-        if (fs.existsSync(pathReplace(filepath))) {
-            playFile(pathReplace(filepath))
+        filepath = pathReplace(filepath);
+
+        let filestats = fs.statSync(filepath);
+        let filesize = filestats["size"];
+
+        if (fs.existsSync(filepath) && filesize) {
+            logger('debug', 'play local file');
+            playFile(filepath)
         } else {
             fs.mkdir(path, {recursive: true}, (err) => {
                 if (err) throw err;
@@ -167,7 +174,7 @@ $(document).ready(function ($) {
             nowPlaying.text('Streaming...');
             player.attr('src', url);
             player[0].play();
-            download(url, pathReplace(filepath));
+            download(url, filepath);
         }
     }
 
@@ -282,13 +289,24 @@ $(document).ready(function ($) {
             deferred = Q.defer();
 
         fileStream.on('open', function () {
-            http.get(url, function (res) {
-                res.on('error', function (err) {
-                    deferred.reject(err);
-                });
+            if (url.startsWith('https')) {
+                https.get(url, function (res) {
+                    res.on('error', function (err) {
+                        deferred.reject(err);
+                    });
 
-                res.pipe(fileStream);
-            });
+                    res.pipe(fileStream);
+                });
+            } else {
+                http.get(url, function (res) {
+                    res.on('error', function (err) {
+                        deferred.reject(err);
+                    });
+
+                    res.pipe(fileStream);
+                });
+            }
+
         }).on('error', function (err) {
             deferred.reject(err);
         }).on('finish', function () {
@@ -364,5 +382,16 @@ $(document).ready(function ($) {
                 $('.file-stream[data-song="' + activeStates.song + '"]').trigger('click');
                 break;
         }
+    }
+
+    function logger(level, msg) {
+        var levels = {
+            error: "ERROR",
+            warn: "WARN",
+            info: "INFO",
+            debug: "DEBUG"
+
+        }
+        console.log(levels[level] + ': ' + msg);
     }
 });
