@@ -159,11 +159,13 @@ $(document).ready(function ($) {
         let path = filepath.substr(0, lastIndex);
 
         filepath = pathReplace(filepath);
+        let filesize = false;
+        if (fs.existsSync(filepath)) {
+            let filestats = fs.statSync(filepath);
+            filesize = filestats["size"];
+        }
 
-        let filestats = fs.statSync(filepath);
-        let filesize = filestats["size"];
-
-        if (fs.existsSync(filepath) && filesize) {
+        if (filesize) {
             logger('debug', 'play local file');
             playFile(filepath)
         } else {
