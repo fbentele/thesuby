@@ -7,7 +7,7 @@ const Q = require('q');
 const jsmediatags = require('jsmediatags');
 const {globalShortcut} = remote;
 const subyFolder = process.env.HOME + '/Music/Suby/';
-let apiBaseU = '';
+let apiBaseUrl = '';
 let apiAccessToken = '';
 let currentFolder = subyFolder;
 
@@ -41,10 +41,10 @@ $(document).ready(function ($) {
         } else {
             last_valid_selection = $(this).val();
         }
-
-        updateDirListing($(this).val(), false);
         albumList.empty();
         trackList.empty();
+        updateDirListing($(this).val(), false);
+
     });
 
     $(document).on('dblclick', '.file-stream', function () {
@@ -151,8 +151,9 @@ $(document).ready(function ($) {
     }
 
     function playStream(item) {
+
         let self = item;
-        let url = apiBaseU + 'stream' + apiAccessToken + '&id=' + self.data('song');
+        let url = apiBaseUrl + 'stream' + apiAccessToken + '&id=' + self.data('song');
         let filepath = subyFolder + self.data('path');
 
         let lastIndex = filepath.lastIndexOf('/');
@@ -249,7 +250,7 @@ $(document).ready(function ($) {
      * API Stuff
      */
     function getArtists() {
-        let api = apiBaseU + 'getArtists' + apiAccessToken;
+        let api = apiBaseUrl + 'getArtists' + apiAccessToken;
         $.get(api, function (data) {
             let artists = data["subsonic-response"]["artists"]["index"];
             artistList.empty();
@@ -259,23 +260,66 @@ $(document).ready(function ($) {
                 });
             });
             artistList.focus();
-        });
-    }
-
-    function getAlbums(artistid) {
-        let api = apiBaseU + 'getArtist' + apiAccessToken + '&id=' + artistid;
-        $.get(api, function (data) {
-            let albums = data["subsonic-response"]["artist"]["album"];
-            albums.forEach(album => {
-                albumList.append('<option class="folder-name" data-album="' + album.id + '" value="' + album.id + '"><div>' + album.name + '</div></option>');
+        }).fail(function (e) {
+            fs.readdir(currentFolder, {withFileTypes: true}, (err, files) => {
+                if (err) {
+                    console.log(err)
+                } else {
+                    artistList.empty();
+                    files.forEach(file => {
+                        if (file.isDirectory()) {
+                            artistList.append('<option class="folder-name" value="' + file.name + '"><td>' + file.name + '</td></option>');
+                        }
+                    });
+                }
             });
 
         });
     }
 
+    function getAlbums(artistid) {
+        if (isNaN(artistid)) {
+            fs.readdir(currentFolder + artistid, {withFileTypes: true}, (err, files) => {
+                if (err) {
+                    console.log(err)
+                } else {
+                    albumList.empty();
+                    files.forEach(file => {
+                        if (file.isDirectory()) {
+                            albumList.append('<option class="folder-name" value="' + artistid + '/' + file.name + '"><td>' + file.name + '</td></option>');
+                        }
+                    });
+                }
+            });
+        } else {
+            let api = apiBaseUrl + 'getArtist' + apiAccessToken + '&id=' + artistid;
+            $.get(api, function (data) {
+                let albums = data["subsonic-response"]["artist"]["album"];
+                albumList.empty();
+                albums.forEach(album => {
+                    albumList.append('<option class="folder-name" data-album="' + album.id + '" value="' + album.id + '"><div>' + album.name + '</div></option>');
+                });
+            });
+        }
+
+    }
+
     function getTracks(albumid) {
-        if (albumid) {
-            let api = apiBaseU + 'getAlbum' + apiAccessToken + '&id=' + albumid;
+        if (isNaN(albumid)) {
+            fs.readdir(currentFolder + albumid, {withFileTypes: true}, (err, files) => {
+                if (err) {
+                    console.log(err)
+                } else {
+                    trackList.empty();
+                    files.forEach(file => {
+                        if (!file.isDirectory()) {
+                            trackList.append('<option class="file-stream" value="' + file.name + '" data-path="' + albumid + '/' + file.name + '"><td>' + file.name + '</td></option>');
+                        }
+                    });
+                }
+            });
+        } else {
+            let api = apiBaseUrl + 'getAlbum' + apiAccessToken + '&id=' + albumid;
             trackList.empty();
             $.get(api, function (data) {
                 let tracks = data["subsonic-response"]["album"]["song"];
@@ -348,7 +392,7 @@ $(document).ready(function ($) {
         $('#settings-server').val(settings.server);
         $('#settings-username').val(settings.username);
         $('#settings-password').val(settings.password);
-        apiBaseU = settings.server + "/rest/";
+        apiBaseUrl = settings.server + "/rest/";
         let token = md5(settings.password + 'therandomsalt');
         apiAccessToken = '?u=' + settings.username + '&t=' + token + '&s=therandomsalt&v=1.16.1&c=thesuby&f=json';
     }
@@ -393,7 +437,7 @@ $(document).ready(function ($) {
             info: "INFO",
             debug: "DEBUG"
 
-        }
+        };
         console.log(levels[level] + ': ' + msg);
     }
 });
